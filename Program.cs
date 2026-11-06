@@ -17,6 +17,7 @@ while (rodando)
     Console.WriteLine("1 - Listar hábitos");
     Console.WriteLine("2 - Adicionar hábito");
     Console.WriteLine("3 - Alterar hábito");
+    Console.WriteLine("4 - Excluir hábito");
     Console.WriteLine("0 - Sair");
     Console.WriteLine("Escolha: ");
 
@@ -83,7 +84,7 @@ while (rodando)
                 }
 
                 // Procura na lista o primeiro hábito cujo ID corresponde ao informado
-                // se não eoncontrar nenhum, retorna null
+                // se não encontrar nenhum, retorna null
                 var habit = habits.FirstOrDefault(h => h.Id == id);
 
                 // verifica se o hábito nao foi encontrado
@@ -107,6 +108,33 @@ while (rodando)
                 habit.Name = novoNome.Trim();
 
                 Console.WriteLine("Hábito alterado.");
+                break;
+            }
+        
+        case "4":
+            {
+                ListarHabitos(habits);
+                if (habits.Count == 0) break;
+
+                // Tenta converter a entrada do usuário para inteiro
+                // Se a conversão falhar, exibe uma mensagem e interrompe o switch
+                Console.Write("Id do hábito que deseja excluir: ");
+                if (!int.TryParse(Console.ReadLine(), out var id))
+                {
+                    Console.WriteLine("Id invpalido: digite apenas números");
+                    break;
+                }
+
+                var habit = habits.FirstOrDefault(h => h.Id == id);
+                if (habit is null)
+                {
+                    Console.WriteLine("Hábito não encontrado");
+                    break;
+                }
+
+                // Remove da lista o objeto correspondente ao hábito encontrado.
+                habits.Remove(habit);
+                Console.WriteLine("Hábito excluído.");
                 break;
             }
         default:

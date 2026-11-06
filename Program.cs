@@ -16,6 +16,7 @@ while (rodando)
     Console.WriteLine("\nHabit Tracker");
     Console.WriteLine("1 - Listar hábitos");
     Console.WriteLine("2 - Adicionar hábito");
+    Console.WriteLine("3 - Alterar hábito");
     Console.WriteLine("0 - Sair");
     Console.WriteLine("Escolha: ");
 
@@ -47,7 +48,7 @@ while (rodando)
                     Console.WriteLine("O nome não pode ser vazio.");
                     break;
                 }
-                
+
                 // Cria um novo objeto Habit e adiciona à lista
                 habits.Add(new Habit
                 {
@@ -60,6 +61,52 @@ while (rodando)
                 });
                 // Informa que o cadastro foi realizado e encerra o case
                 Console.WriteLine("Hábito adicionado!");
+                break;
+            }
+        case "3":
+            {
+                // Exibe todos os hábitos cadastrados
+                ListarHabitos(habits);
+
+                // Verifica se a lista está vazia
+                // se não houver hábitos, interrompe o switch e volta ao menu
+                if (habits.Count == 0) break;
+
+                Console.Write("Id do háabito que deseja alterar: ");
+
+                // Tenta converter a entrada do usuário para inteiro
+                // Se a conversão falhar, exibe uma mensagem e interrompe o switch
+                if (!int.TryParse(Console.ReadLine(), out var id))
+                {
+                    Console.WriteLine("Id inválido: digite apenas números.");
+                    break;
+                }
+
+                // Procura na lista o primeiro hábito cujo ID corresponde ao informado
+                // se não eoncontrar nenhum, retorna null
+                var habit = habits.FirstOrDefault(h => h.Id == id);
+
+                // verifica se o hábito nao foi encontrado
+                if (habit is null)
+                {
+                    Console.WriteLine("Hábito não encontrado.");
+                    break;
+                }
+
+                Console.Write("Novo nome: ");
+                var novoNome = Console.ReadLine();
+
+                // Verifica se o novo nome é null, vazio ou contém espaços
+                if (string.IsNullOrWhiteSpace(novoNome))
+                {
+                    Console.WriteLine("O nome não pode ser vazio.");
+                    break;
+                }
+
+                // Atualiza o nome do hábito, removendo espaços extras do inicio e do final
+                habit.Name = novoNome.Trim();
+
+                Console.WriteLine("Hábito alterado.");
                 break;
             }
         default:

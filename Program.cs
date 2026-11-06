@@ -41,13 +41,20 @@ while (rodando)
                 Console.WriteLine("Nome do hábito: ");
                 var nome = Console.ReadLine();
 
+                // Verifica se o nome é nulo, vazio ou contém apenas espaços em branco
+                if (string.IsNullOrWhiteSpace(nome))
+                {   
+                    Console.WriteLine("O nome não pode ser vazio.");
+                    break;
+                }
+                
                 // Cria um novo objeto Habit e adiciona à lista
                 habits.Add(new Habit
                 {
                     //Atribui o Id atual e incrementa proximoId em 1
                     Id = proximoId++,
-                    //Atribui o nome informado, se o nome for null, utiliza uma string vazia
-                    Name = nome ?? "",
+                    //Atribui o nome informado, remove espaços em branco do inicio e do final do nome
+                    Name = nome.Trim(),
                     //Registra a data e o horário atual
                     CreatedAt = DateTime.Now 
                 });

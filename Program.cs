@@ -2,16 +2,12 @@
 using HabitTracker;
 
 
-// Cria uma lista vazia de objetos do tipo Habit
-var habits = new List<Habit>();
-// Controla o próximo Id que será atribuido a um hábito
-var proximoId = 1;
+var service = new HabitService();
 var rodando = true;
 
 // Executa o bloco de código repetidamente enquanto rodando for true
 while (rodando)
 {
-
     // Exibe as opçoes disponíveis no menu e solicita uma opção
     Console.WriteLine("\nHabit Tracker");
     Console.WriteLine("1 - Listar hábitos");
@@ -34,109 +30,21 @@ while (rodando)
             Console.WriteLine("Até logo!");
             break;
         case "1":
-            // Chama o método ListarHabitos caso digite 1
-            ListarHabitos(habits);
+            // Chama o método responsável por listar os hábitos
+            ListarHabitos(service);
             break;
         case "2":
-            {
-                // Solicita o nome do novo hábito
-                Console.WriteLine("Nome do hábito: ");
-                var nome = Console.ReadLine();
-
-                // Verifica se o nome é nulo, vazio ou contém apenas espaços em branco
-                if (string.IsNullOrWhiteSpace(nome))
-                {   
-                    Console.WriteLine("O nome não pode ser vazio.");
-                    break;
-                }
-
-                // Cria um novo objeto Habit e adiciona à lista
-                habits.Add(new Habit
-                {
-                    //Atribui o Id atual e incrementa proximoId em 1
-                    Id = proximoId++,
-                    //Atribui o nome informado, remove espaços em branco do inicio e do final do nome
-                    Name = nome.Trim(),
-                    //Registra a data e o horário atual
-                    CreatedAt = DateTime.Now 
-                });
-                // Informa que o cadastro foi realizado e encerra o case
-                Console.WriteLine("Hábito adicionado!");
-                break;
-            }
+            // Chama o método responsável por adicionar um hábito
+            AdicionarHabito(service);
+            break;
         case "3":
-            {
-                // Exibe todos os hábitos cadastrados
-                ListarHabitos(habits);
-
-                // Verifica se a lista está vazia
-                // se não houver hábitos, interrompe o switch e volta ao menu
-                if (habits.Count == 0) break;
-
-                Console.Write("Id do háabito que deseja alterar: ");
-
-                // Tenta converter a entrada do usuário para inteiro
-                // Se a conversão falhar, exibe uma mensagem e interrompe o switch
-                if (!int.TryParse(Console.ReadLine(), out var id))
-                {
-                    Console.WriteLine("Id inválido: digite apenas números.");
-                    break;
-                }
-
-                // Procura na lista o primeiro hábito cujo ID corresponde ao informado
-                // se não encontrar nenhum, retorna null
-                var habit = habits.FirstOrDefault(h => h.Id == id);
-
-                // verifica se o hábito nao foi encontrado
-                if (habit is null)
-                {
-                    Console.WriteLine("Hábito não encontrado.");
-                    break;
-                }
-
-                Console.Write("Novo nome: ");
-                var novoNome = Console.ReadLine();
-
-                // Verifica se o novo nome é null, vazio ou contém espaços
-                if (string.IsNullOrWhiteSpace(novoNome))
-                {
-                    Console.WriteLine("O nome não pode ser vazio.");
-                    break;
-                }
-
-                // Atualiza o nome do hábito, removendo espaços extras do inicio e do final
-                habit.Name = novoNome.Trim();
-
-                Console.WriteLine("Hábito alterado.");
-                break;
-            }
-        
+            // Chama o método responsável por alterar um hábito
+            AlterarHabito(service);
+            break;
         case "4":
-            {
-                ListarHabitos(habits);
-                if (habits.Count == 0) break;
-
-                // Tenta converter a entrada do usuário para inteiro
-                // Se a conversão falhar, exibe uma mensagem e interrompe o switch
-                Console.Write("Id do hábito que deseja excluir: ");
-                if (!int.TryParse(Console.ReadLine(), out var id))
-                {
-                    Console.WriteLine("Id invpalido: digite apenas números");
-                    break;
-                }
-
-                var habit = habits.FirstOrDefault(h => h.Id == id);
-                if (habit is null)
-                {
-                    Console.WriteLine("Hábito não encontrado");
-                    break;
-                }
-
-                // Remove da lista o objeto correspondente ao hábito encontrado.
-                habits.Remove(habit);
-                Console.WriteLine("Hábito excluído.");
+            // Chama o método responsável por excluir um hábito
+            ExcluirHabito(service);
                 break;
-            }
         default:
             // Caso digite uma opção não específicada
             Console.WriteLine("Opção inválida");
@@ -144,9 +52,11 @@ while (rodando)
     }
 }
 
-// Declara um método estático que recebe uma lista de objetos Habit como parâmetro
-static void ListarHabitos(List<Habit> habits)
+// Recebe o serviço responsável pelo gerenciamento dos hábitos.
+static void ListarHabitos(HabitService service)
 {
+    // Solicita ao serviço todos os hábitos cadastrados
+    var habits = service.ListarTodos();
     // Verifica se não existe nenhum hábito
     if (habits.Count == 0)
     {
@@ -162,4 +72,95 @@ static void ListarHabitos(List<Habit> habits)
         // Exibe Id, nome e data de criação do hábito
         Console.WriteLine($" {h.Id} - {h.Name} (criado em {h.CreatedAt:dd/MM/yyyy})");
     }
+}
+// Recebe o serviço responsável pelo gerenciamento dos hábitos
+static void AdicionarHabito(HabitService service)
+{
+    Console.Write("Nome do hábito: ");
+    // Lê o nome digitado
+    var nome = Console.ReadLine();
+
+    // Solicita ao serviço que tente adicionar o hábito
+    // O resultado será um objeti Habit ou null
+    var habit = service.Adicionar(nome);
+
+    // verifica se o serviço retornou null
+    if (habit is null)
+        // Informa que o nome fornecido é inválido
+        Console.WriteLine("O nome não pode ser vazio.");
+    else
+        // exibe o nome e o ID do hábito criado
+        Console.WriteLine($"Hábito \"{habit.Name}\" adicionado com Id {habit.Id}.");
+}
+
+// Recebe o serviço responsável pelo gerenciamento dos hábitos
+static void AlterarHabito(HabitService service)
+{
+    // Exibe todos os hábitos cadastrados
+    ListarHabitos(service);
+
+    // Verifica se a lista está vazia
+    // Se estiver, encerra o método e retorna ao menu
+    if (service.ListarTodos().Count == 0)
+        return;
+
+    // Solicita o ID ao usuário e tenta realizar sua conversão
+    // Retorna um número inteiro ou null caso a entrada seja inválida 
+    var id = LerId("Id do hábito que deseja alterar: ");
+
+    // Se o ID for null, interrompe o método
+    if (id is null) 
+        return;
+
+    // Solicita o novo nome do hábito
+    Console.Write("Novo nome: ");
+    var novoNome = Console.ReadLine();
+
+    // Solicita ao serviço que tente alterar o hábito
+    // id.Value obtém o valor inteiro amrazenado ao nullable int
+    if (service.Alterar(id.Value, novoNome))
+        Console.WriteLine("Hábito alterado com sucesso.");
+    else
+        Console.WriteLine("Não foi possível alterar (Id inexistente ou nome vazio).");
+}
+// Recebe o serviço responsável pelo gerenciamento dos hábitos
+static void ExcluirHabito(HabitService service)
+{
+    // Exibe todos os hábitos cadastrados
+    ListarHabitos(service);
+
+    // verifica se existem hábitos para excluir
+    // se alista estiver vazia, encerra o método
+    if (service.ListarTodos().Count == 0) return;
+
+    // Solicita o ID do hábito que será excluido
+    var id = LerId("Id do hábito que deseja excluir: ");
+
+    // Se o ID for inválido, encerra o método
+    if (id is null)
+        return;
+
+    // Solicita ao serviço que tente excluir o hábito
+    // Retorna true se conseguir excluir ou false se não encontrar o hábito
+    if (service.Excluir(id.Value))
+        Console.WriteLine("Hábito excluído.");
+    else
+        Console.WriteLine("Hábito não encontrado.");
+}
+
+// Recebe uma mensagem que será exibida ao solicitar um ID
+// Retorna um número inteiro ou null caso a entrada seja inválida
+static int? LerId(string mensagem)
+{
+    // Exibe a mensagem recebida como parâmetro
+    Console.Write(mensagem);
+
+    // Tenta converter a entrada do usuário para um número inteiro
+    if (int.TryParse(Console.ReadLine(), out var id))
+        // Se a conversão funcionar, retorna o ID informado
+        return id;
+
+    Console.WriteLine("Id inválido: digite apenas números.");
+    // Retorna null para indicar que a entrada foi inválida
+    return null;
 }

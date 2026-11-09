@@ -12,6 +12,8 @@ public class HabitService
     // Armazena o próximo ID que será atribuido a aum hábito
     // Começa em 1
     private int _proximoId = 1;
+    // Cria uma lista privada para armazenar as conclusões dos hábitos
+    private readonly List<Completion> _completions = new();
     // Retorna a lista de hábitos como uma coleção somente para leitura
     public IReadOnlyList<Habit> ListarTodos() => _habits;
     // Procura um hábito pelo ID informado
@@ -79,4 +81,39 @@ public class HabitService
         // Remove o hábito da lista e retorna o resultado da operação
         return _habits.Remove(habit);
     }
+
+    public IReadOnlyList<Completion> ListarConclusoes() => _completions;
+
+    public bool EstaConcluido(int habitId, DateOnly date) =>
+        _completions.Any(c => c.HabitId == habitId && c.Date == date);
+
+    // Marca ou desmarca o hábito naquele dia
+    // Devolve true se agora está concluído, false se a conclusão foi removida
+    // e null se o hábito não existe.
+    public bool? AlternarConclusao(int habitId, DateOnly date)
+    {
+        // Verifica se existe um hábito com o ID informado
+        // Se não existir, retorna null e encerra o método
+        if (BuscarPorId(habitId) is null)
+            return null;
+
+        // Procura uma conclusão que corresponda ao ID do hábito
+        // e à data informada
+        var existente = _completions.FirstOrDefault(
+            c => c.HabitId == habitId && c.Date == date);
+        
+        // Verifica se já existe uma conclusão para esse hábito nessa data
+        if (existente is not null)
+        {
+            // Remove a conclusão existente da lista
+            _completions.Remove(existente);
+            return false;
+        }
+        // Se não existir uma conclusão, cria uma nova
+        // Passa o ID do hábito e a data para Completion
+        _completions.Add(new Completion(habitId, date));
+        return true;
+    }
+
+
 }

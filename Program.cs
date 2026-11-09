@@ -14,6 +14,7 @@ while (rodando)
     Console.WriteLine("2 - Adicionar hábito");
     Console.WriteLine("3 - Alterar hábito");
     Console.WriteLine("4 - Excluir hábito");
+    Console.WriteLine("5 - Marcar/desmarcar hábito de hoje");
     Console.WriteLine("0 - Sair");
     Console.WriteLine("Escolha: ");
 
@@ -45,6 +46,10 @@ while (rodando)
             // Chama o método responsável por excluir um hábito
             ExcluirHabito(service);
                 break;
+            // Chama o método responsável por marcar ou desmarcar um hábito
+        case "5":
+            MarcarHabito(service);
+                break;
         default:
             // Caso digite uma opção não específicada
             Console.WriteLine("Opção inválida");
@@ -65,12 +70,18 @@ static void ListarHabitos(HabitService service)
         return;
     }
 
-    Console.WriteLine("\nSeus hábitos:");
+    // Obtém a data atual, sem considerar o horário
+    var hoje = DateOnly.FromDateTime(DateTime.Now);
+
+    Console.WriteLine("\nSeus hábitos (hoje):");
     // Percorre todos elementos da lista habits
     foreach (var h in habits)
     {   
+        // Verifica se o hábito foi concluido hoje
+        // se sim, atribui "x"; caso contrário, atribui um espaço vazio
+        var marca = service.EstaConcluido(h.Id, hoje) ? "x" : " ";
         // Exibe Id, nome e data de criação do hábito
-        Console.WriteLine($" {h.Id} - {h.Name} (criado em {h.CreatedAt:dd/MM/yyyy})");
+        Console.WriteLine($" [{marca}] {h.Id} - {h.Name} (criado em {h.CreatedAt:dd/MM/yyyy})");
     }
 }
 // Recebe o serviço responsável pelo gerenciamento dos hábitos
@@ -163,4 +174,39 @@ static int? LerId(string mensagem)
     Console.WriteLine("Id inválido: digite apenas números.");
     // Retorna null para indicar que a entrada foi inválida
     return null;
+}
+
+//Recebe o serviço responsável pelo gerenciamento dos hábitos
+static void MarcarHabito(HabitService service)
+{
+    // Exibe todos os hábitos cadastrados e seus estados de conclusão de hoje
+    ListarHabitos(service);
+    
+    // Verifica se existem hábitos cadastrados
+    // se a lista estiver vazia, encerra o método e retorna ao menu
+    if (service.ListarTodos().Count == 0) return;
+
+    // Solicita ao usuário o ID do hábito que deseja marcar ou desmarcar
+    var id = LerId("Id do hábito que deseja marcar/desmacar hoje: ");
+    
+    // Verifica se o ID é null, caso seja, encerra o método
+    if (id is null) 
+        return;
+
+    // Obtém a data atual, sem considerar o horário
+    var hoje = DateOnly.FromDateTime(DateTime.Now);
+    
+    // Solicita ao serviço que alterne o estado de conclusão do hábito
+    // O resultado pode ser true, false ou null
+    var resultado = service.AlternarConclusao(id.Value, hoje);
+
+    // Verifica se o resultado é null
+    if (resultado is null)
+        Console.WriteLine("Hábito não encontrado.");
+    // Verifica se o resultado é true
+    else if (resultado.Value)
+        Console.WriteLine("Hábito concluído hoje!");
+    // Se chegou aqui, o resultado é false
+    else
+        Console.WriteLine("Conclusão de hoje removida.");
 }
